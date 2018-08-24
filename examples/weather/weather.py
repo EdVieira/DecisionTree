@@ -41,6 +41,7 @@ datamatrix = [
 	['rainy','mild','high','TRUE','no']
 ]
 """
+"""
 datamatrix = [
 	['sunny','hot','high','FALSE',25],
 	['sunny','hot','high','TRUE',30],
@@ -57,6 +58,7 @@ datamatrix = [
 	['overcast','hot','normal','FALSE',52],
 	['rainy','mild','high','TRUE',44]
 ]
+"""
 """
 datamatrix = [
 	['sunny','33','high','FALSE',25],
@@ -75,7 +77,6 @@ datamatrix = [
 	['rainy','21','high','TRUE',44]
 ]
 """
-"""
 datamatrix = [
 	['1','33','90','0',25],
 	['1','32','90','1',30],
@@ -92,7 +93,6 @@ datamatrix = [
 	['50','24','50','0',52],
 	['100','21','90','1',44]
 ]
-"""
 datamatrix.sort()
 tree = tree.Tree(tableheader, datamatrix)#, mode="between")
 tree.showTrees()
