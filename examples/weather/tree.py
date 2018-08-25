@@ -218,9 +218,6 @@ class Tree(object):
 				resGlobal = resGlobal + dml.list_get_column_distinct(branchMatrix, self.target_index)
 			node_resGlobalcopy = []
 			node_resGlobalcopy.extend(resGlobal)
-			node_nGlobal = 1 #  Count Elements.
-			node_avgGlobal = 1 # Average (Avg) is the value in the leaf nodes(branch value).
-			node_std_devGlobal = 1 # Standard Deviation (S) is for tree building (branching)
 			#Prepare the data
 			isn, node_resGlobalcopy = self.prepare_data(node_resGlobalcopy)
 			# Measure statistics
