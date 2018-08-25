@@ -20,7 +20,7 @@ import math
 from decimal import Decimal
 
 def isnumeric(v):
-	# It check if element v is a numeric data
+	# It checks if the element v is a numeric data
 	try:
 		t = Decimal(v)
 		return True
@@ -28,7 +28,7 @@ def isnumeric(v):
 		return False
 
 def list_isnumeric(l):
-	# It check if list elements are numeric data
+	# It checks if the list l elements are numeric data
 	res = False
 	for i in l:
 		res = isnumeric(i)
