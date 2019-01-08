@@ -14,13 +14,12 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-
 import datamanipulation as dml
 import math
 from decimal import Decimal
 
 def isnumeric(v):
-	# It check if element v is a numeric data
+	# It checks if the element v is a numeric data
 	try:
 		t = Decimal(v)
 		return True
@@ -28,7 +27,7 @@ def isnumeric(v):
 		return False
 
 def list_isnumeric(l):
-	# It check if list elements are numeric data
+	# It checks if the list l elements are numeric data
 	res = False
 	for i in l:
 		res = isnumeric(i)
@@ -72,12 +71,15 @@ class Tree(object):
 				# Create node branches
 				nodes[i] = self.create_node_branches(nodes[i], datamatrix)
 			# Chose root Node
-			self.choose_rootNode(nodes)
+			rootnode = self.choose_rootNode(nodes)[0]
+			if self.root == None:
+				self.root = rootnode
 			# Check branching possibility for each Branch added to this node
-			self.branching_possibility(self.root, level, tableheader)
+			self.branching_possibility(rootnode, level, tableheader)
 
 
 		if rootBranch != None:
+			#print tableheader
 			# If there is Root Node
 			nodes = []
 			# ADD remaining nodes (related to the column label)
@@ -89,19 +91,64 @@ class Tree(object):
 					# create node
 					n = Node(tree = self, label = tableheader[i], index = tindex, rootBranch = rootBranch,level = level)
 					nodes.append(n)
-
+			# Choose better node to branch it
+			nodes = [self.choose_rootNode(nodes)[0]]
 			# Check branch possibility for each node
-			for i in range(len(nodes)):
-				# Create node branches
-				nodes[i] = self.create_node_branches(nodes[i], datamatrix)
-				# Check branching possibility for each Branch added to this node
-				self.branching_possibility(nodes[i], level, tableheader)
-			self.nodes = nodes
+			#for i in range(len(nodes)):
+			# Create node branches
+			nodes[0] = self.create_node_branches(nodes[0], datamatrix)
+			# Check branching possibility for each Branch added to this node
+			self.branching_possibility(nodes[0], level, tableheader)
+			self.nodes = self.nodes + nodes
 		return nodes
 		
 	def branching_possibility(self, node, level, tableheader):
 		i = node
-		# Check branching possibility for each Branch added to this node
+		# Check branching possibility for each Branch added to this node'
+		"""
+		if len(i.branches) < 1:
+			print i.rootBranch.rootNode.label
+			print 'aaaaaaaaaa'
+			# Get its filtered matrix
+			branchMatrix = i.get_root_data()
+			# Get the distinct values from target column
+			res = dml.list_get_column(branchMatrix, self.target_index)
+			print res
+			rescopy = []
+			rescopy.extend(res)
+
+			# Prepare the data
+			# Check if target index is not numeric
+			isn, rescopy = self.prepare_data(rescopy)
+
+			# MEASURE TARGET COLUMN STANDARD DEVIATION and its coefficient
+			# Measure statistics
+			n, avg, std_dev, cv = self.statistics(rescopy)
+			i.rootBranch.nodes = []
+			print n, avg, std_dev, cv
+			#self.stop_branching_add_leaf(i.rootBranch, i.rootBranch.rootNode.level, res, isn, avg, std_dev)
+			n = Node(tree = self, label = self.tableheader[self.target_index], index = self.target_index, rootBranch = i.rootBranch,level = level+1)
+			if i.rootBranch.rootNode.label == 'SibSp':
+				print 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+			nb = None
+			if isn:
+				print 'bbbbbbbbbbbbbb'
+				if self.mode == 'avg':
+					nb = Branch(rootNode = n, value = avg, relation = '==', std_dev = std_dev)
+					n.branches.append(nb)
+				elif self.mode == 'between':
+					res.sort()
+					nb1 = Branch(rootNode = n, value = res[-1], relation = '>=', std_dev = std_dev+avg)
+					n.branches.append(nb1)
+					nb2 = Branch(rootNode = n, value = res[0], relation = '<=', std_dev = avg-std_dev)
+					n.branches.append(nb2)
+			else:
+				print 'cccccccccccc'
+				nb = Branch(rootNode = n, value = res[0], std_dev = std_dev)
+				n.branches.append(nb)
+			i.rootBranch.nodes = [n]
+			return 0"""
+		node_cv = self.choose_rootNode([i])
 		for branch in i.branches:
 			# Get its filtered matrix
 			branchMatrix = branch.get_models()
@@ -113,7 +160,6 @@ class Tree(object):
 			# Prepare the data
 			# Check if target index is not numeric
 			isn, rescopy = self.prepare_data(rescopy)
-
 			# MEASURE TARGET COLUMN STANDARD DEVIATION and its coefficient
 			# Measure statistics
 			n, avg, std_dev, cv = self.statistics(rescopy)
@@ -139,16 +185,19 @@ class Tree(object):
 
 	def statistics(self, res):
 		n = len(res) #  Count Elements.
-		avg = Decimal(sum(res))/Decimal(n) # Average (Avg) is the value in the leaf nodes(branch value).
-		aux = Decimal(0.0)
-		for s in res:
-			aux = aux + (s - avg)**2
-		std_dev = Decimal(math.sqrt(aux/n)) # Standard Deviation (S) is for tree building (branching)
-		if std_dev != avg:
-			cv = std_dev/avg*100 # Coefficient of Deviation (CV) is used to decide when to stop branching. We can use Count (n) as well.
+		if n != 0:
+			avg = Decimal(sum(res))/Decimal(n) # Average (Avg) is the value in the leaf nodes(branch value).
+			aux = Decimal(0.0)
+			for s in res:
+				aux = aux + (s - avg)**2
+			std_dev = Decimal(math.sqrt(aux/n)) # Standard Deviation (S) is for tree building (branching)
+			if std_dev != avg:
+				cv = std_dev/avg*100 # Coefficient of Deviation (CV) is used to decide when to stop branching. We can use Count (n) as well.
+			else:
+				cv = 0
+			return n, avg, std_dev, cv
 		else:
-			cv = 0
-		return n, avg, std_dev, cv
+			return 0, 0, 0, 0
 
 	def create_node_branches(self, node, datamatrix):
 		# Get distinct values from this node corresponding column
@@ -200,7 +249,7 @@ class Tree(object):
 		# Global DATASET ATTRIBUTES
 		resGlobal = []
 		# Get the node data
-		resGlobal = dml.list_get_column(self.datamatrix, self.target_index)
+		resGlobal = dml.list_get_column(rootnode.get_root_data(), self.target_index)
 		# Duplicate it
 		resGlobalcopy = []
 		resGlobalcopy.extend(resGlobal)
@@ -246,7 +295,7 @@ class Tree(object):
 				rootnode = i
 				rootSDR = node_std_reduction # Standard Deviation Reduction: the largest the better
 		# ROOTNODE FOUND
-		self.root = rootnode
+		return rootnode, nGlobal, avgGlobal,std_devGlobal, cv
 
 	def keep_branching(self, node, branch, level, tableheader, branchMatrix):
 		# keep recursive branching
@@ -264,9 +313,9 @@ class Tree(object):
 				n.branches.append(nb)
 			elif self.mode == 'between':
 				res.sort()
-				nb1 = Branch(rootNode = n, value = res[0], relation = '>=', std_dev = std_dev)
+				nb1 = Branch(rootNode = n, value = res[-1], relation = '>=', std_dev = std_dev+avg)
 				n.branches.append(nb1)
-				nb2 = Branch(rootNode = n, value = res[-1], relation = '<=', std_dev = std_dev)
+				nb2 = Branch(rootNode = n, value = res[0], relation = '<=', std_dev = avg-std_dev)
 				n.branches.append(nb2)
 		else:
 			nb = Branch(rootNode = n, value = res[0], std_dev = std_dev)

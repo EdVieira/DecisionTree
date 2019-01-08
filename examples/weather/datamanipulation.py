@@ -30,10 +30,11 @@ def list_get_column(mt, index):
 	#get a column from a matrix
 	res = []
 	for i in mt:
-		for j in i:
-			if i.index(j) == index:
-				res.append(j)
-				break
+		res.append(i[index])
+		#for j in i:
+		#	if i.index(j) == index:
+		#		res.append(j)
+		#		break
 	return res
 
 def list_get_column_distinct(mt, index):
